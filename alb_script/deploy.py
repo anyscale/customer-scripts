@@ -4,8 +4,10 @@ import yaml
 import argparse
 import os
 
+from typing import List, Mapping
 
-def find_instances(region, clusters):
+
+def find_instances(region: str, clusters: List[str]):
     """find all running instances that match any of the cluster ids provided
 
     Args:
@@ -26,7 +28,7 @@ def find_instances(region, clusters):
     for reservation in response["Reservations"]:
         for instance in reservation["Instances"]:
             instance_ids.append(instance["InstanceId"])
-    print(f"Found all instances with these cluster ids: {clusters}.\n")
+    print(f"Found {len(instance_ids)} instances with these cluster ids: {clusters}.\n")
     return instance_ids
 
 
@@ -152,9 +154,7 @@ def plan(region, stack_name, versions):
 
     with open("cf_template.json", "w") as file:
         file.write(cf_template_json)
-    print(
-        "Generated the cloudformation template. A copy has been saved in cf_template.json.\n"
-    )
+    print("Generated the cloudformation template. A copy has been saved in cf_template.json.\n")
     return cf_template_json
 
 
@@ -170,9 +170,7 @@ def apply(region, stack_name, cf_template, parameters):
     print("Applying the cloudformation template ...\n")
     client = boto3.client("cloudformation", region)
     try:
-        client.create_stack(
-            StackName=stack_name, TemplateBody=cf_template, Parameters=parameters
-        )
+        client.create_stack(StackName=stack_name, TemplateBody=cf_template, Parameters=parameters)
         waiter = client.get_waiter("stack_create_complete")
         waiter_config = {}
     except client.exceptions.AlreadyExistsException:
@@ -191,12 +189,12 @@ def apply(region, stack_name, cf_template, parameters):
 
     waiter.wait(StackName=stack_name, WaiterConfig=waiter_config)
     print("Finished deploying the cloudformation template.\n")
-    ALB_description = client.describe_stack_resource(
+    alb_description = client.describe_stack_resource(
         StackName=stack_name, LogicalResourceId=f"ALB{stack_name}"
     )
     client = boto3.client("elbv2", "us-west-2")
     response = client.describe_load_balancers(
-        LoadBalancerArns=[ALB_description["StackResourceDetail"]["PhysicalResourceId"]]
+        LoadBalancerArns=[alb_description["StackResourceDetail"]["PhysicalResourceId"]]
     )
 
     ALB_dns_name = response["LoadBalancers"][0]["DNSName"]
@@ -219,9 +217,7 @@ def delete(region, stack_name):
     print(f"Deleted cloudformation stack {stack_name}.")
 
 
-parser = argparse.ArgumentParser(
-    description="Apply the input yaml to a cloudformation stack"
-)
+parser = argparse.ArgumentParser(description="Apply the input yaml to a cloudformation stack")
 parser.add_argument("verb", metavar="verb", type=str, help="Either apply or delete")
 parser.add_argument(
     "path",
