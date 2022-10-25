@@ -1,0 +1,21 @@
+# roll out a new version of this service, with 80% of the traffic going to the old version
+
+stack_name: ALBStackName # must be unique amongst stack names in this AWS region
+region: us-west-2 # AWS region for these resources
+
+versions:
+- name: "oldVersion" # must be alphanumeric and unique amongst versions in this stack
+  weight: 8 # weight assigned to this group of instances
+  cluster_ids: # cluster_ids corresponding to clusters serving the same deployments
+  - ses_000000000000000000000000
+  - ses_000000000000000000000001
+- name: "newVersion"
+  weight: 2
+  cluster_ids:
+  - ses_000000000000000000000002
+
+
+# both security_groups and subnets are comma delimited lists without spaces
+security_groups: sg-00000000000000000 # security groups that instances are deployed in
+subnets: subnet-00000000000000000,subnet-00000000000000001,subnet-00000000000000002 # all possible subnets of the following VPC
+vpc_id: vpc-00000000000000000 # VPC that all instances are deployed in

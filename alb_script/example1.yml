@@ -1,0 +1,17 @@
+# create a single version of a service with 3 clusters
+
+stack_name: ALBStackName # must be unique amongst stack names in this AWS region
+region: us-west-2 # AWS region for these resources
+
+versions:
+- name: "version1" # must be alphanumeric and unique amongst versions in this stack
+  weight: 1 # weight assigned to this group of instances
+  cluster_ids: # cluster_ids corresponding to clusters serving the same deployments
+  - ses_000000000000000000000000
+  - ses_000000000000000000000001
+  - ses_000000000000000000000002
+
+# both security_groups and subnets are comma delimited lists without spaces
+security_groups: sg-00000000000000000 # security groups that instances are deployed in
+subnets: subnet-00000000000000000,subnet-00000000000000001,subnet-00000000000000002 # all possible subnets of the following VPC
+vpc_id: vpc-00000000000000000 # VPC that all instances are deployed in
