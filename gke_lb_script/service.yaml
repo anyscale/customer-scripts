@@ -1,0 +1,27 @@
+# Overview: you should directly in the Anyscale managed K8s cluster.
+# The core is to target a single cluster using label selector
+# Notice that the cluster id is lower cased. The cluster id is accessible when the service is running.
+# You can find it via the web UI or using the following Python script: 
+#   SERVICE_ID=service_xyzxyz python -c "from anyscale import AnyscaleSDK;import os;print(AnyscaleSDK().get_service(os.environ['SERVICE_ID']).result.state.cluster_id)"
+# To update, just re-apply with the service's cluster id. 
+apiVersion: v1
+kind: Service
+metadata:
+  name: anyscale-service
+  namespace: ray-default
+  annotations:
+    # Optionally, configure the load balancer to private networking
+    # https://cloud.google.com/kubernetes-engine/docs/concepts/service-load-balancer
+    # https://cloud.google.com/kubernetes-engine/docs/concepts/service-load-balancer-parameters
+    # networking.gke.io/load-balancer-type: "Internal" 
+spec:
+  type: LoadBalancer
+  selector:
+    cluster.anyscale.io/cluster-id: ses_pdquj6vy7xz6i1qqz5z2l5mc
+    cluster.anyscale.io/ray-cluster-node-type: head
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000 # This is the Ray Serve port
+
+
